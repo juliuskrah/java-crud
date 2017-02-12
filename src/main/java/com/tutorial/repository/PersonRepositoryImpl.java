@@ -29,6 +29,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 		em = emf.createEntityManager();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Person create(Person person) {
 		em.getTransaction().begin();
@@ -37,6 +40,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 		return person;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Person read(Long id) {
 		em.getTransaction().begin();
@@ -45,6 +51,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 		return person;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Person update(Person person) {
 		em.getTransaction().begin();
@@ -53,6 +62,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 		return person;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete(Person person) {
 		em.getTransaction().begin();
@@ -60,6 +72,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 		em.getTransaction().commit();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void close() {
 		emf.close();

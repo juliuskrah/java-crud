@@ -67,7 +67,7 @@ public class Application {
 			log.info("Person updated: {}", person);
 			// Delete person
 			repository.delete(person);
-			
+
 			person = repository.read(1L);
 
 			log.info("Person deleted: {}", person);
@@ -76,14 +76,14 @@ public class Application {
 			log.error("Error occurred in initialization: " + e.getMessage());
 			e.printStackTrace();
 		} finally {
-			log.info("Server shutting down");
-			if (server != null)
-				server.stop();
-			log.info("Shutdown complete");
 			log.info("Closing Entity Manager Factory");
 			if (repository != null)
 				repository.close();
 			log.info("Entity Manager Factory closed ");
+			log.info("Server shutting down");
+			if (server != null)
+				server.stop();
+			log.info("Shutdown complete");
 		}
 	}
 

@@ -7,11 +7,12 @@
 	<description>Simple CRUD project using Hibernate and JPA</description>
 
 	<properties>
+		<h2.version>1.4.193</h2.version>
+		<hibernate.version>5.2.6.Final</hibernate.version>
+		<junit.version>4.12</junit.version>
+		<log4j2.version>2.7</log4j2.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<hibernate.version>5.2.6.Final</hibernate.version>
-		<h2.version>1.4.193</h2.version>
-		<log4j2.version>2.7</log4j2.version>
 	</properties>
 
 	<dependencies>
@@ -24,6 +25,7 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Logging -->
@@ -39,6 +41,14 @@
 			<version>${log4j2.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-		
+
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 </project>

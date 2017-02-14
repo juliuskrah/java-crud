@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
+			<artifactId>hibernate-hikaricp</artifactId>
 			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>

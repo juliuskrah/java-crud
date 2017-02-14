@@ -15,6 +15,9 @@
  */
 package com.tutorial.repository;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -33,33 +36,35 @@ public class PersonRepositoryImpl implements PersonRepository {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Person create(Person person) {
+	public Optional<Person> create(Person person) {
+		Objects.requireNonNull(person, "Person must not be null");
 		em.getTransaction().begin();
 		em.persist(person);
 		em.getTransaction().commit();
-		return person;
+		return Optional.of(person);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Person read(Long id) {
+	public Optional<Person> read(Long id) {
 		em.getTransaction().begin();
 		Person person = em.find(Person.class, id);
 		em.getTransaction().commit();
-		return person;
+		return Optional.ofNullable(person);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Person update(Person person) {
+	public Optional<Person> update(Person person) {
+		Objects.requireNonNull(person, "Person must not be null");
 		em.getTransaction().begin();
 		person = em.merge(person);
 		em.getTransaction().commit();
-		return person;
+		return Optional.of(person);
 	}
 
 	/**

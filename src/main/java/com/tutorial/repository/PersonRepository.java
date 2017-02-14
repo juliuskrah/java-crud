@@ -15,6 +15,8 @@
  */
 package com.tutorial.repository;
 
+import java.util.Optional;
+
 import com.tutorial.entity.Person;
 
 /**
@@ -27,29 +29,34 @@ public interface PersonRepository {
 	 * Create a new Person
 	 * 
 	 * @param person
-	 * @return Person
+	 *            the person to create
+	 * @return {@code Optional<Person>}
 	 */
-	Person create(Person person);
+	Optional<Person> create(Person person);
 
 	/**
 	 * Read Person by id
 	 * 
 	 * @param id
-	 * @return Person
+	 *            id of the person to read
+	 * @return {@code Optional<Person>}
 	 */
-	Person read(Long id);
+	Optional<Person> read(Long id);
 
 	/**
 	 * Update person
 	 * 
 	 * @param person
+	 *            person to update
+	 * @return {@code Optional<Person>}
 	 */
-	Person update(Person person);
+	Optional<Person> update(Person person);
 
 	/**
 	 * Delete person
 	 * 
 	 * @param person
+	 *            person to delete
 	 */
 	void delete(Person person);
 

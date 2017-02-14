@@ -16,14 +16,16 @@
 package com.tutorial.repository;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Optional;
 
 import org.h2.tools.Server;
 import org.junit.AfterClass;
@@ -69,43 +71,49 @@ public class PersonRepositoryTest {
 		person.setCreatedDate(LocalDateTime.now());
 		person.setDateOfBirth(LocalDate.of(1992, Month.AUGUST, 12));
 
-		person = repository.create(person);
-		log.info("Created person: {}", person);
+		Optional<Person> p = repository.create(person);
+		p.ifPresent(consumer -> {
+			log.info("Created person: {}", consumer);
+			assertThat(consumer.getId(), is(3L));
+		});
 
-		assertThat(person.getId(), is(3L));
 	}
 
 	@Test
 	public void testUpdate() {
-		Person person = repository.read(1L);
-		person.setModifiedDate(LocalDateTime.now());
-		person.setFirstName("Abeiku");
-
-		person = repository.update(person);
-		person = null;
+		Optional<Person> person = repository.read(1L);
+		person.ifPresent(consumer -> {
+			consumer.setModifiedDate(LocalDateTime.now());
+			consumer.setFirstName("Abeiku");
+			repository.update(consumer);
+		});
 
 		person = repository.read(1L);
-		assertNotNull(person);
-		assertThat(person.getFirstName(), is("Abeiku"));
+		assertTrue(person.isPresent());
+
+		assertThat(person.get().getFirstName(), is("Abeiku"));
+
 	}
 
 	@Test
 	public void testRead() {
-		Person person = repository.read(1L);
+		Optional<Person> person = repository.read(1L);
 
-		assertNotNull(person);
-		assertThat(person.getFirstName(), is("Julius"));
+		assertTrue(person.isPresent());
+		assertThat(person.get().getFirstName(), is("Julius"));
 	}
 
 	@Test
 	public void testDelete() {
-		Person person = repository.read(2L);
+		Optional<Person> person = repository.read(2L);
 
-		assertNotNull(person);
-		repository.delete(person);
+		person.ifPresent(consumer -> {
+			assertNotNull(consumer);
+			repository.delete(consumer);
+		});
 
 		person = repository.read(2L);
-		assertNull(person);
+		assertFalse(person.isPresent());
 	}
 
 	@AfterClass

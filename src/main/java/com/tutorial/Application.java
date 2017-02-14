@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Optional;
 
 import org.h2.tools.Server;
 import org.slf4j.Logger;
@@ -49,28 +50,32 @@ public class Application {
 			// Create person
 			repository.create(person);
 
-			person = null;
 			// Hibernate generates id of 1
-			person = repository.read(1L);
+			Optional<Person> p = repository.read(1L);
 
-			log.info("Person from database: {}", person);
-
-			person.setModifiedDate(LocalDateTime.now());
-			person.setFirstName("Abeiku");
+			p.ifPresent(consumer -> {
+				log.info("Person from database: {}", consumer);
+				consumer.setModifiedDate(LocalDateTime.now());
+				consumer.setFirstName("Abeiku");
+			});
 			// Update person record
-			repository.update(person);
+			repository.update(p.get());
+			
+			p = Optional.empty();
 
-			person = null;
 			// Read updated record
-			person = repository.read(1L);
-
-			log.info("Person updated: {}", person);
+			p = repository.read(1L);
+			p.ifPresent(consumer -> {
+				log.info("Person updated: {}", consumer);
+			});
 			// Delete person
-			repository.delete(person);
+			repository.delete(p.get());
+			
+			p = Optional.empty();
 
-			person = repository.read(1L);
+			p = repository.read(1L);
 
-			log.info("Person deleted: {}", person);
+			log.info("Does person exist: {}", p.isPresent());
 
 		} catch (SQLException e) {
 			log.error("Error occurred in initialization: " + e.getMessage());

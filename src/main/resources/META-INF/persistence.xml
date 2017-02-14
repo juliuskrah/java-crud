@@ -30,7 +30,10 @@
 			<property name="javax.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/test" />
 			<property name="javax.persistence.jdbc.user" value="sa" />
 			<property name="javax.persistence.jdbc.password" value="" />
-			<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />
+			<property name="hibernate.hikari.minimumIdle" value="5" />
+			<property name="hibernate.hikari.maximumPoolSize" value="10" />
+			<property name="hibernate.hikari.idleTimeout" value="30000" />
+			<property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider" />
 		</properties>
 	</persistence-unit>
 </persistence>

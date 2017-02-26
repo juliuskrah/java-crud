@@ -81,7 +81,16 @@ public class PersonRepositoryImpl implements PersonRepository {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public EntityManager getEntityManager() {
+		return em;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void close() {
 		emf.close();
 	}
+
 }

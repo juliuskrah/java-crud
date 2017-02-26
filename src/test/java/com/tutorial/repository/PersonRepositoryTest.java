@@ -21,13 +21,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Optional;
 
-import org.h2.tools.Server;
+import org.hibernate.internal.SessionImpl;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,18 +38,34 @@ import org.slf4j.LoggerFactory;
 
 import com.tutorial.entity.Person;
 
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+
 public class PersonRepositoryTest {
 	private static final Logger log = LoggerFactory.getLogger(PersonRepositoryTest.class);
 	private static PersonRepository repository;
-	private static Server server;
 
 	@BeforeClass
 	public static void beforeClass() throws SQLException {
-		log.info("Starting H2 server...");
-		server = Server.createTcpServer().start();
-		log.info("H2 server started");
 		log.info("Initializing entity manager factory...");
 		repository = new PersonRepositoryImpl();
+		Connection connection = repository.getEntityManager().unwrap(SessionImpl.class).connection();
+		Database database = null;
+		Liquibase liquibase = null;
+
+		try {
+			log.debug("Starting liquibase migration...");
+			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+			liquibase = new Liquibase("dbChangelog.xml", new ClassLoaderResourceAccessor(), database);
+			liquibase.update("test");
+		} catch (LiquibaseException e) {
+			log.error("Error occured in execution: {}", e.getMessage());
+			e.printStackTrace();
+		}
 		log.info("Entity manager factory started");
 	}
 
@@ -121,8 +138,5 @@ public class PersonRepositoryTest {
 		log.info("Closing entity manager factory...");
 		repository.close();
 		log.info("Entity manager factory closed");
-		log.info("Shutting down H2 server...");
-		server.stop();
-		log.info("H2 server has shut down");
 	}
 }

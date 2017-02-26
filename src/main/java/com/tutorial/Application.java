@@ -15,30 +15,38 @@
  */
 package com.tutorial;
 
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Optional;
 
-import org.h2.tools.Server;
+import javax.persistence.EntityManager;
+
+import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tutorial.entity.Person;
 import com.tutorial.repository.PersonRepositoryImpl;
 
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+
 public class Application {
 
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
 
 	public static void main(String[] args) {
-		Server server = null;
 		PersonRepositoryImpl repository = null;
 		try {
-			// Start H2 embedded database
-			server = Server.createTcpServer().start();
-			log.info("Server started");
+			repository = new PersonRepositoryImpl();
+
+			init(repository.getEntityManager());
 
 			Person person = new Person();
 			person.setFirstName("Julius");
@@ -46,7 +54,6 @@ public class Application {
 			person.setCreatedDate(LocalDateTime.now());
 			person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
 
-			repository = new PersonRepositoryImpl();
 			// Create person
 			repository.create(person);
 
@@ -60,7 +67,7 @@ public class Application {
 			});
 			// Update person record
 			repository.update(p.get());
-			
+
 			p = Optional.empty();
 
 			// Read updated record
@@ -70,26 +77,35 @@ public class Application {
 			});
 			// Delete person
 			repository.delete(p.get());
-			
+
 			p = Optional.empty();
 
 			p = repository.read(1L);
 
 			log.info("Does person exist: {}", p.isPresent());
 
-		} catch (SQLException e) {
-			log.error("Error occurred in initialization: " + e.getMessage());
-			e.printStackTrace();
 		} finally {
 			log.info("Closing Entity Manager Factory");
 			if (repository != null)
 				repository.close();
 			log.info("Entity Manager Factory closed ");
-			log.info("Server shutting down");
-			if (server != null)
-				server.stop();
-			log.info("Shutdown complete");
 		}
 	}
 
+	private static void init(EntityManager em) {
+
+		Connection connection = em.unwrap(SessionImpl.class).connection();
+		Database database = null;
+		Liquibase liquibase = null;
+
+		try {
+			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+			liquibase = new Liquibase("dbChangelog.xml", new ClassLoaderResourceAccessor(), database);
+			liquibase.update("test");
+		} catch (LiquibaseException e) {
+			log.error("Error occured in execution: {}", e.getMessage());
+			e.printStackTrace();
+		}
+
+	}
 }

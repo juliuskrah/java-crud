@@ -21,53 +21,32 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Optional;
 
-import org.hibernate.internal.SessionImpl;
-import org.junit.AfterClass;
+import javax.inject.Inject;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.tutorial.Application;
 import com.tutorial.entity.Person;
 
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = Application.class)
+@Transactional
 public class PersonRepositoryTest {
 	private static final Logger log = LoggerFactory.getLogger(PersonRepositoryTest.class);
-	private static PersonRepository repository;
-
-	@BeforeClass
-	public static void beforeClass() throws SQLException {
-		log.info("Initializing entity manager factory...");
-		repository = new PersonRepositoryImpl();
-		Connection connection = repository.getEntityManager().unwrap(SessionImpl.class).connection();
-		Database database = null;
-		Liquibase liquibase = null;
-
-		try {
-			log.debug("Starting liquibase migration...");
-			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-			liquibase = new Liquibase("dbChangelog.xml", new ClassLoaderResourceAccessor(), database);
-			liquibase.update("test");
-		} catch (LiquibaseException e) {
-			log.error("Error occured in execution: {}", e.getMessage());
-			e.printStackTrace();
-		}
-		log.info("Entity manager factory started");
-	}
+	@Inject
+	private PersonRepository repository;
 
 	@Before
 	public void before() {
@@ -133,10 +112,4 @@ public class PersonRepositoryTest {
 		assertFalse(person.isPresent());
 	}
 
-	@AfterClass
-	public static void afterClass() {
-		log.info("Closing entity manager factory...");
-		repository.close();
-		log.info("Entity manager factory closed");
-	}
 }

@@ -18,18 +18,29 @@ package com.tutorial.repository;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.PersistenceUnit;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tutorial.entity.Person;
 
+@Component
+@Transactional
 public class PersonRepositoryImpl implements PersonRepository {
-	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.juliuskrah.tutorial");
+	@PersistenceUnit(unitName = "com.juliuskrah.tutorial")
+	private EntityManagerFactory emf;
 	private EntityManager em;
 
 	public PersonRepositoryImpl() {
-		em = emf.createEntityManager();
+	}
+
+	@PostConstruct
+	public void initEntityManager() {
+		this.em = this.emf.createEntityManager();
 	}
 
 	/**
@@ -38,20 +49,17 @@ public class PersonRepositoryImpl implements PersonRepository {
 	@Override
 	public Optional<Person> create(Person person) {
 		Objects.requireNonNull(person, "Person must not be null");
-		em.getTransaction().begin();
-		em.persist(person);
-		em.getTransaction().commit();
+		this.em.persist(person);
 		return Optional.of(person);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Transactional(readOnly = true)
 	@Override
 	public Optional<Person> read(Long id) {
-		em.getTransaction().begin();
-		Person person = em.find(Person.class, id);
-		em.getTransaction().commit();
+		Person person = this.em.find(Person.class, id);
 		return Optional.ofNullable(person);
 	}
 
@@ -61,9 +69,7 @@ public class PersonRepositoryImpl implements PersonRepository {
 	@Override
 	public Optional<Person> update(Person person) {
 		Objects.requireNonNull(person, "Person must not be null");
-		em.getTransaction().begin();
-		person = em.merge(person);
-		em.getTransaction().commit();
+		person = this.em.merge(person);
 		return Optional.of(person);
 	}
 
@@ -72,25 +78,7 @@ public class PersonRepositoryImpl implements PersonRepository {
 	 */
 	@Override
 	public void delete(Person person) {
-		em.getTransaction().begin();
-		em.remove(person);
-		em.getTransaction().commit();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public EntityManager getEntityManager() {
-		return em;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void close() {
-		emf.close();
+		this.em.remove(person);
 	}
 
 }

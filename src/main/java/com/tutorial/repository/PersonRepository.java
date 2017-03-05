@@ -17,8 +17,6 @@ package com.tutorial.repository;
 
 import java.util.Optional;
 
-import javax.persistence.EntityManager;
-
 import com.tutorial.entity.Person;
 
 /**
@@ -61,17 +59,5 @@ public interface PersonRepository {
 	 *            person to delete
 	 */
 	void delete(Person person);
-
-	/**
-	 * Get the EntityManager to manage entities
-	 * 
-	 * @return {@link EntityManager}
-	 */
-	EntityManager getEntityManager();
-
-	/**
-	 * close the entity manager factory
-	 */
-	void close();
 
 }

@@ -15,97 +15,176 @@
  */
 package com.tutorial;
 
-import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Optional;
+import java.util.Properties;
 
-import javax.persistence.EntityManager;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 
-import org.hibernate.internal.SessionImpl;
+import org.hibernate.hikaricp.internal.HikariConfigurationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.Assert;
 
 import com.tutorial.entity.Person;
-import com.tutorial.repository.PersonRepositoryImpl;
+import com.tutorial.repository.PersonRepository;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.integration.spring.SpringLiquibase;
 
+@Configuration
+@ComponentScan
+@EnableTransactionManagement
+@PropertySource("classpath:application.properties")
 public class Application {
 
 	private static final Logger log = LoggerFactory.getLogger(Application.class);
+	@Inject
+	private Environment env;
+	@Inject
+	private ResourceLoader resourceLoader;
 
 	public static void main(String[] args) {
-		PersonRepositoryImpl repository = null;
-		try {
-			repository = new PersonRepositoryImpl();
+		ApplicationContext ctx = new AnnotationConfigApplicationContext(Application.class);
+		PersonRepository repository = ctx.getBean(PersonRepository.class);
 
-			init(repository.getEntityManager());
+		Person person = new Person();
+		person.setFirstName("Julius");
+		person.setLastName("Krah");
+		person.setCreatedDate(LocalDateTime.now());
+		person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
 
-			Person person = new Person();
-			person.setFirstName("Julius");
-			person.setLastName("Krah");
-			person.setCreatedDate(LocalDateTime.now());
-			person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
+		// Create person
+		repository.create(person);
 
-			// Create person
-			repository.create(person);
+		// Hibernate generates id of 1
+		Optional<Person> p = repository.read(1L);
 
-			// Hibernate generates id of 1
-			Optional<Person> p = repository.read(1L);
+		p.ifPresent(consumer -> {
+			log.info("Person from database: {}", consumer);
+			consumer.setModifiedDate(LocalDateTime.now());
+			consumer.setFirstName("Abeiku");
+		});
+		// Update person record
+		repository.update(p.get());
 
-			p.ifPresent(consumer -> {
-				log.info("Person from database: {}", consumer);
-				consumer.setModifiedDate(LocalDateTime.now());
-				consumer.setFirstName("Abeiku");
-			});
-			// Update person record
-			repository.update(p.get());
+		p = Optional.empty();
 
-			p = Optional.empty();
+		// Read updated record
+		p = repository.read(1L);
+		p.ifPresent(consumer -> {
+			log.info("Person updated: {}", consumer);
+		});
+		// Delete person
+		repository.delete(p.get());
 
-			// Read updated record
-			p = repository.read(1L);
-			p.ifPresent(consumer -> {
-				log.info("Person updated: {}", consumer);
-			});
-			// Delete person
-			repository.delete(p.get());
+		p = Optional.empty();
 
-			p = Optional.empty();
+		p = repository.read(1L);
 
-			p = repository.read(1L);
-
-			log.info("Does person exist: {}", p.isPresent());
-
-		} finally {
-			log.info("Closing Entity Manager Factory");
-			if (repository != null)
-				repository.close();
-			log.info("Entity Manager Factory closed ");
-		}
+		log.info("Does person exist: {}", p.isPresent());
+		((AnnotationConfigApplicationContext) ctx).close();
 	}
 
-	private static void init(EntityManager em) {
+	private Properties properties() {
+		Properties props = new Properties();
+		props.setProperty("javax.persistence.provider",
+				env.getRequiredProperty("spring.jpa.properties.javax.persistence.provider"));
+		props.setProperty("javax.persistence.schema-generation.database.action",
+				env.getRequiredProperty("spring.jpa.hibernate.ddl-auto"));
+		props.setProperty("hibernate.hikari.dataSourceClassName",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.dataSourceClassName"));
+		props.setProperty("hibernate.hikari.dataSource.url",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.dataSource.url"));
+		props.setProperty("hibernate.hikari.dataSource.user",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.dataSource.user"));
+		props.setProperty("hibernate.hikari.dataSource.password",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.dataSource.password"));
+		props.setProperty("hibernate.hikari.minimumIdle",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.minimumIdle"));
+		props.setProperty("hibernate.hikari.maximumPoolSize",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.maximumPoolSize"));
+		props.setProperty("hibernate.hikari.idleTimeout",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.hikari.idleTimeout"));
+		props.setProperty("hibernate.connection.handling_mode",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.connection.handling_mode"));
+		props.setProperty("hibernate.connection.provider_class",
+				env.getRequiredProperty("spring.jpa.properties.hibernate.connection.provider_class"));
 
-		Connection connection = em.unwrap(SessionImpl.class).connection();
-		Database database = null;
-		Liquibase liquibase = null;
+		return props;
+	}
 
-		try {
-			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-			liquibase = new Liquibase("dbChangelog.xml", new ClassLoaderResourceAccessor(), database);
-			liquibase.update("test");
-		} catch (LiquibaseException e) {
-			log.error("Error occured in execution: {}", e.getMessage());
-			e.printStackTrace();
+	@Bean(destroyMethod = "close")
+	public DataSource dataSource() {
+		log.debug("Starting datasource driver...");
+		HikariConfig config = HikariConfigurationUtil.loadConfiguration(properties());
+
+		return new HikariDataSource(config);
+	}
+
+	@Bean
+	public SpringLiquibase liquibase(DataSource dataSource) {
+		SpringLiquibase liquibase = new SpringLiquibase();
+		liquibase.setDataSource(dataSource);
+		liquibase.setChangeLog(env.getRequiredProperty("liquibase.change-log"));
+		liquibase.setContexts(env.getRequiredProperty("liquibase.contexts"));
+		liquibase.setDropFirst(env.getRequiredProperty("liquibase.drop-first", Boolean.class));
+		liquibase.setShouldRun(env.getRequiredProperty("liquibase.enabled", Boolean.class));
+		log.debug("Configuring Liquibase...");
+
+		return liquibase;
+	}
+
+	@PostConstruct
+	public void checkChangelogExists() {
+		if (env.getRequiredProperty("liquibase.check-change-log-location", Boolean.class)) {
+
+			Resource resource = this.resourceLoader
+
+					.getResource(env.getRequiredProperty("liquibase.change-log"));
+
+			Assert.state(resource.exists(), "Cannot find changelog location: " + resource
+					+ " (please add changelog or check your Liquibase configuration)");
 		}
 
+	}
+
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManager() {
+		log.debug("Starting EntityManager...");
+		LocalContainerEntityManagerFactoryBean entityManager = new LocalContainerEntityManagerFactoryBean();
+		entityManager.setPackagesToScan("com.tutorial.entity");
+		entityManager.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+		entityManager.setJpaProperties(properties());
+		entityManager.setPersistenceUnitName("com.juliuskrah.tutorial");
+
+		return entityManager;
+	}
+
+	@Bean
+	public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+		log.debug("Starting TransactionManager...");
+
+		return new JpaTransactionManager(emf);
 	}
 }

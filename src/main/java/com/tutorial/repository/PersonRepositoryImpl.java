@@ -23,12 +23,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tutorial.entity.Person;
 
-@Component
+@Repository
 @Transactional
 public class PersonRepositoryImpl implements PersonRepository {
 	@PersistenceUnit(unitName = "com.juliuskrah.tutorial")

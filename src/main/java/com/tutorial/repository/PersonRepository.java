@@ -1,5 +1,5 @@
 /*
- * Copyright 2016, Julius Krah                                                 
+ * Copyright 2017, Julius Krah                                                 
  * by the @authors tag. See the LICENCE in the distribution for a              
  * full listing of individual contributors.                                   
  *                                                                           
@@ -17,6 +17,8 @@ package com.tutorial.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.repository.Repository;
+
 import com.tutorial.entity.Person;
 
 /**
@@ -24,15 +26,15 @@ import com.tutorial.entity.Person;
  * @author Julius Krah
  *
  */
-public interface PersonRepository {
+public interface PersonRepository extends Repository<Person, Long> {
 	/**
-	 * Create a new Person
+	 * Create or Update a Person
 	 * 
 	 * @param person
-	 *            the person to create
+	 *            the person to create or update
 	 * @return {@code Optional<Person>}
 	 */
-	Optional<Person> create(Person person);
+	Optional<Person> save(Person person);
 
 	/**
 	 * Read Person by id
@@ -41,16 +43,7 @@ public interface PersonRepository {
 	 *            id of the person to read
 	 * @return {@code Optional<Person>}
 	 */
-	Optional<Person> read(Long id);
-
-	/**
-	 * Update person
-	 * 
-	 * @param person
-	 *            person to update
-	 * @return {@code Optional<Person>}
-	 */
-	Optional<Person> update(Person person);
+	Optional<Person> findOne(Long id);
 
 	/**
 	 * Delete person

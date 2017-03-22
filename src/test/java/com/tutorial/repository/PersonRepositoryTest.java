@@ -1,5 +1,5 @@
 /*
- * Copyright 2016, Julius Krah                                                 
+ * Copyright 2017, Julius Krah                                                 
  * by the @authors tag. See the LICENCE in the distribution for a              
  * full listing of individual contributors.                                   
  *                                                                           
@@ -56,7 +56,7 @@ public class PersonRepositoryTest {
 		person.setCreatedDate(LocalDateTime.now());
 		person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
 
-		repository.create(person);
+		repository.save(person);
 	}
 
 	@Test
@@ -66,8 +66,8 @@ public class PersonRepositoryTest {
 		person.setLastName("Krah");
 		person.setCreatedDate(LocalDateTime.now());
 		person.setDateOfBirth(LocalDate.of(1992, Month.AUGUST, 12));
-
-		Optional<Person> p = repository.create(person);
+		
+		Optional<Person> p = repository.save(person);
 		p.ifPresent(consumer -> {
 			log.info("Created person: {}", consumer);
 			assertThat(consumer.getId(), is(3L));
@@ -77,14 +77,15 @@ public class PersonRepositoryTest {
 
 	@Test
 	public void testUpdate() {
-		Optional<Person> person = repository.read(1L);
+		Optional<Person> person = repository.findOne(5L);
+
 		person.ifPresent(consumer -> {
 			consumer.setModifiedDate(LocalDateTime.now());
 			consumer.setFirstName("Abeiku");
-			repository.update(consumer);
+			repository.save(consumer);
 		});
 
-		person = repository.read(1L);
+		person = repository.findOne(5L);
 		assertTrue(person.isPresent());
 
 		assertThat(person.get().getFirstName(), is("Abeiku"));
@@ -93,7 +94,7 @@ public class PersonRepositoryTest {
 
 	@Test
 	public void testRead() {
-		Optional<Person> person = repository.read(1L);
+		Optional<Person> person = repository.findOne(1L);
 
 		assertTrue(person.isPresent());
 		assertThat(person.get().getFirstName(), is("Julius"));
@@ -101,14 +102,14 @@ public class PersonRepositoryTest {
 
 	@Test
 	public void testDelete() {
-		Optional<Person> person = repository.read(2L);
+		Optional<Person> person = repository.findOne(4L);
 
 		person.ifPresent(consumer -> {
 			assertNotNull(consumer);
 			repository.delete(consumer);
 		});
 
-		person = repository.read(2L);
+		person = repository.findOne(4L);
 		assertFalse(person.isPresent());
 	}
 

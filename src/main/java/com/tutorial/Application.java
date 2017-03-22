@@ -1,5 +1,5 @@
 /*
- * Copyright 2016, Julius Krah                                                 
+ * Copyright 2017, Julius Krah                                                 
  * by the @authors tag. See the LICENCE in the distribution for a              
  * full listing of individual contributors.                                   
  *                                                                           
@@ -32,12 +32,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -53,7 +53,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import liquibase.integration.spring.SpringLiquibase;
 
 @Configuration
-@ComponentScan
+@EnableJpaRepositories
 @EnableTransactionManagement
 @PropertySource("classpath:application.properties")
 public class Application {
@@ -75,10 +75,10 @@ public class Application {
 		person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
 
 		// Create person
-		repository.create(person);
+		repository.save(person);
 
 		// Hibernate generates id of 1
-		Optional<Person> p = repository.read(1L);
+		Optional<Person> p = repository.findOne(1L);
 
 		p.ifPresent(consumer -> {
 			log.info("Person from database: {}", consumer);
@@ -86,12 +86,12 @@ public class Application {
 			consumer.setFirstName("Abeiku");
 		});
 		// Update person record
-		repository.update(p.get());
+		repository.save(p.get());
 
 		p = Optional.empty();
 
 		// Read updated record
-		p = repository.read(1L);
+		p = repository.findOne(1L);
 		p.ifPresent(consumer -> {
 			log.info("Person updated: {}", consumer);
 		});
@@ -100,7 +100,7 @@ public class Application {
 
 		p = Optional.empty();
 
-		p = repository.read(1L);
+		p = repository.findOne(1L);
 
 		log.info("Does person exist: {}", p.isPresent());
 		((AnnotationConfigApplicationContext) ctx).close();
@@ -169,7 +169,7 @@ public class Application {
 
 	}
 
-	@Bean
+	@Bean(name = "entityManagerFactory")
 	public LocalContainerEntityManagerFactoryBean entityManager() {
 		log.debug("Starting EntityManager...");
 		LocalContainerEntityManagerFactoryBean entityManager = new LocalContainerEntityManagerFactoryBean();

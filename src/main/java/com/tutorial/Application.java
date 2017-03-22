@@ -160,7 +160,6 @@ public class Application {
 		if (env.getRequiredProperty("liquibase.check-change-log-location", Boolean.class)) {
 
 			Resource resource = this.resourceLoader
-
 					.getResource(env.getRequiredProperty("liquibase.change-log"));
 
 			Assert.state(resource.exists(), "Cannot find changelog location: " + resource

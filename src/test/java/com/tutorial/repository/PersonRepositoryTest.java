@@ -33,15 +33,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tutorial.Application;
 import com.tutorial.entity.Person;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = Application.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
 @Transactional
 public class PersonRepositoryTest {
 	private static final Logger log = LoggerFactory.getLogger(PersonRepositoryTest.class);
@@ -55,7 +54,7 @@ public class PersonRepositoryTest {
 		person.setLastName("Krah");
 		person.setCreatedDate(LocalDateTime.now());
 		person.setDateOfBirth(LocalDate.of(1990, Month.APRIL, 4));
-
+		
 		repository.save(person);
 	}
 
@@ -66,18 +65,18 @@ public class PersonRepositoryTest {
 		person.setLastName("Krah");
 		person.setCreatedDate(LocalDateTime.now());
 		person.setDateOfBirth(LocalDate.of(1992, Month.AUGUST, 12));
-		
+
 		Optional<Person> p = repository.save(person);
 		p.ifPresent(consumer -> {
 			log.info("Created person: {}", consumer);
-			assertThat(consumer.getId(), is(3L));
+			assertThat(consumer.getId(), is(4L));
 		});
 
 	}
 
 	@Test
 	public void testUpdate() {
-		Optional<Person> person = repository.findOne(5L);
+		Optional<Person> person = repository.findOne(6L);
 
 		person.ifPresent(consumer -> {
 			consumer.setModifiedDate(LocalDateTime.now());
@@ -85,7 +84,7 @@ public class PersonRepositoryTest {
 			repository.save(consumer);
 		});
 
-		person = repository.findOne(5L);
+		person = repository.findOne(6L);
 		assertTrue(person.isPresent());
 
 		assertThat(person.get().getFirstName(), is("Abeiku"));
@@ -94,7 +93,7 @@ public class PersonRepositoryTest {
 
 	@Test
 	public void testRead() {
-		Optional<Person> person = repository.findOne(1L);
+		Optional<Person> person = repository.findOne(2L);
 
 		assertTrue(person.isPresent());
 		assertThat(person.get().getFirstName(), is("Julius"));
@@ -102,14 +101,15 @@ public class PersonRepositoryTest {
 
 	@Test
 	public void testDelete() {
-		Optional<Person> person = repository.findOne(4L);
+		Optional<Person> person = repository.findOne(5L);
+		assertTrue("Person does not exist", person.isPresent());
 
 		person.ifPresent(consumer -> {
 			assertNotNull(consumer);
 			repository.delete(consumer);
 		});
 
-		person = repository.findOne(4L);
+		person = repository.findOne(5L);
 		assertFalse(person.isPresent());
 	}
 

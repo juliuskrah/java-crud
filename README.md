@@ -7,6 +7,8 @@ This implies no need to call `begin` and `close` or `rollback` of the transactio
 This repository also showcases how to perform basic CRUD using Spring-Boot. We will leverage Spring-Boot's auto configuration and
 write less boilerplate code.
 
+The tutorial accompanying this repository is located at [http://juliuskrah.com/tutorial/2017/04/23/crud-operations-with-spring-boot/](http://juliuskrah.com/tutorial/2017/04/23/crud-operations-with-spring-boot/)
+
 ## Prerequisites
 - Maven
 - JDK

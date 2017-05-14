@@ -4,7 +4,9 @@ In this repository you will find code that performs basic CRUD operations on H2 
 code found here uses Container managed Entity Manager. The lifecycle of a transaction will be managed by the spring container.
 This implies no need to call `begin` and `close` or `rollback` of the transaction class. The container will also close the 
 `EntityManagerFactory` after application terminates.   
-This repository also showcases how to perform basic CRUD using Spring.
+This repository also showcases how to perform basic CRUD using Spring.  
+
+The tutorial accompanying this repository is located at [http://juliuskrah.com/tutorial/2017/03/22/crud-operations-with-spring-data-jpa/](http://juliuskrah.com/tutorial/2017/03/22/crud-operations-with-spring-data-jpa/)
 
 ## Prerequisites
 - Maven

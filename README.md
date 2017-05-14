@@ -6,6 +6,8 @@ This implies no need to call `begin` and `close` or `rollback` of the transactio
 `EntityManagerFactory` after application terminates.   
 This repository also showcases how to perform basic CRUD using Spring.
 
+The tutorial to this repository is located here: [http://juliuskrah.com/tutorial/2017/03/05/crud-operations-with-spring/](http://juliuskrah.com/tutorial/2017/03/05/crud-operations-with-spring/)
+
 ## Prerequisites
 - Maven
 - JDK

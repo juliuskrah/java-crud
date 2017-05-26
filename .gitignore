@@ -10,4 +10,5 @@ buildNumber.properties
 .settings/
 logs/
 .project
+.vscode/
 .classpath

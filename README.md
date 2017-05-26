@@ -1,4 +1,5 @@
 [ ![Codeship Status for juliuskrah/java-crud](https://app.codeship.com/projects/e1e1f9d0-d361-0134-0c11-16d407f7e953/status?branch=master)](https://app.codeship.com/projects/201898)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # CRUD Operations with Hibernate and JPA using Liquibase Migrations
 In this repository you will find code that performs basic CRUD operations on H2 database using Hibernate and JPA.  
 This repository also showcases how to perform database migrations using Liquibase.
